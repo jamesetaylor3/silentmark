@@ -1,6 +1,9 @@
 /target
 **/*.rs.bk
 
+# mac silliness
+**/.DS_Store
+
 # exclude testing files
 *.txt
 *.png
