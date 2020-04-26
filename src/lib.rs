@@ -122,13 +122,6 @@ fn read_silentmark(img_buf: &ImageBuffer<Rgb<u8>, Vec<u8>>, silentmark_path: &st
 
 	let mut outfile = File::create(silentmark_path)?;
 
-	println!("{:?}", silentmark_buffer);
-
-	// println!(
-	// 	"{}",
-	// 	String::from_utf8(silentmark_buffer.clone())?,
-	// );
-
 	outfile.write_all(&silentmark_buffer)?;
 
 	Ok(())
