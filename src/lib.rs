@@ -6,6 +6,7 @@ use std::io::prelude::*;
 
 use image::ImageBuffer;
 use image::Rgb;
+use clap::clap_app;
 
 enum Action {
 	WRITE,
@@ -19,37 +20,37 @@ pub struct Config {
 }
 
 impl Config {
-	// will need a way to make this more robust
-	// have --help
-	// have ability to customize silentmarked image
-	// look into how to properly design these features
-	pub fn new (mut args: std::env::Args) -> Result<Config, &'static str> {
-		args.next();
+	pub fn new() -> Result<Config, &'static str> {
 
-		let image_path = match args.next() {
-			Some(arg) => arg,
-			None => return Err("Didn't get a path to an image"),
-		};
+		let matches = clap_app!(silenmark =>
+			(@setting SubcommandRequiredElseHelp)
+			(version: "0.1.0")
+			(author: "James Taylor <jamestaylor3@protonmail.com>")
+			(about: "Use stenography on images from the command line")
+			(@subcommand write =>
+				(about: "Write a message to an image")
+				(@arg message: -m +takes_value +required "path of image to read message")
+				(@arg image: -i +takes_value +required "path of image to write message")
+			)
+			(@subcommand read =>
+				(about: "Read a message from an image")
+				(@arg image: -i +takes_value +required "path of image to read message")
+				(@arg message: -o +takes_value "path of file to write message. default msg.txt")
+			)
+		).get_matches();
 
-		let action = match args.next().as_ref().map(String::as_str) {
-			Some("-w") => Action::WRITE,
-			Some("-r") => Action::READ,
-			Some(_) => return Err("Not a valid action"),
-			None => return Err("Didn't get an action"),
-		};
+		let action: Action;
 
-		let silentmark_path = match args.next() {
-			Some(arg) => arg,
-			None => return Err("Didn't get a path to a silentmark text file"),
-		};
+		if let Some(_) = matches.subcommand_matches("write") {
+			action = Action::WRITE;
+		} else if let Some(_) = matches.subcommand_matches("read") {
+			action = Action::READ;
+		} else {
+			return Err("Not a valid subcommand. This should be unreachable!");
+		}
 
-		// let output_path = match args.next().as_ref().map(String::as_str) {
-		// 	Some("-o") => match args.next() {
-		// 		Some(arg) => Some(arg),
-		// 		None => return Err("Didn't get a path for a silentmarked image despite -o flag"),
-		// 	},
-		// 	_ => None,
-		// };
+		let silentmark_path = matches.value_of("message").unwrap_or("msg.txt").to_string();
+		let image_path = matches.value_of("image").unwrap().to_string();
 
 		Ok(Config { image_path, silentmark_path, action })
 	}
